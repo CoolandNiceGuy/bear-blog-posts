@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta content="width=device-width, initial-scale=1" name="viewport" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Exo:wght@600&family=Prompt&family=Roboto+Mono&display=swap" rel="stylesheet">
+		<title>Glass Village Blog</title>
+		<link rel="stylesheet"  type="text/css" href="./main.css">
+		<script src="https://kit.fontawesome.com/f68e658398.js" crossorigin="anonymous"></script>
+	</head>
+	<body>
+
+		<header>
+			<h1 class="title">Glass Village</h1>
+			<a href="https://blog.glassvillage.io"><div class="btn"><i class="fa-solid fa-house"></i></div></a>
+			<a href="https://glassvillage.io/"><div class="btn"><i class="fa-solid fa-globe"></i></div></a>
+			<a href="https://github.com/CoolandNiceGuy"><div class="btn"><i class="fa-brands fa-github"></i></div></a>
+			<a href="https://www.linkedin.com/in/landon-borges/"><div class="btn"><i class="fa-brands fa-linkedin"></i></div></a>
+			<a href="https://twitter.com/Landon_Borges"><div class="btn"><i class="fa-brands fa-twitter"></i></div></a>
+		</header>
+
+		<div class="mobileHeader">
+			<h1 class="title">Glass Village Blog</h1>
+		</div>
+
+		<main>
+			<article>
+	
+				<h1>How To Create A Blog with Bear</h1>
+<blockquote>
+<p>Create a note in bear, automatically publish it to GitHub with a keyboard shortcut, and have those changes reflected on your website. </p>
+</blockquote>
+<h2>Background</h2>
+<p>This article will walk through every step needed to create your own blog site and have it post content from your own <a href="http://www.bear-writer.com/">Bear app</a>.</p>
+<p>This work by using a PHP script to pull your Bear notes from the SQLite database, parsing the markdown and converting it to HTML, then posting the generated HTML files to <a href="https://github.com/CoolandNiceGuy/bear-blog-posts">Github</a> to be hosted on a <a href="https://blog.glassvillage.io/">website</a>. </p>
+<p>This site was created straight from my Bear app and is a testament to how approachable this workflow is.</p>
+<h2>Starting assumptions</h2>
+<ul>
+<li>You have (some)  experience with software development tools like:
+<ul>
+<li>Homebrew</li>
+<li>Github</li>
+<li>Terminal</li>
+<li>Text Editors</li>
+</ul></li>
+</ul>
+<h2>Step 1: Setup</h2>
+<ol>
+<li>
+<p>Clone GitHub project <a href="https://github.com/CoolandNiceGuy/blogging-with-bear">https://github.com/CoolandNiceGuy/blogging-with-bear</a> in whatever directory you want the project to live. </p>
+<blockquote>
+<p>Tip: make sure the directory does <strong>not</strong> have a folder named ‘public’ as that will be deleted when the script is run.</p>
+</blockquote>
+</li>
+<li>
+<p>Type <code>brew install php</code> in your terminal so we are able to run PHP scripts</p>
+</li>
+</ol>
+<h2>Step 2: Configuration</h2>
+<p>There are a few variables that have to be set to match your specific environment for this workflow to work.</p>
+<ol>
+<li>Open config.php and update the variables accordingly</li>
+<li>Open GitPublishHelper.php and update the <code>$path</code> and <code>$repo_url</code> variables </li>
+</ol>
+<h2>Step 3: Automation (optional)</h2>
+<p>At this point, assuming you set the configuration variables correctly, running bear-export.php will successfully publish your “public” tagged notes and upload them to GitHub. The instructions in this sections will allow you to create an Touch Bar action + keyboard shortcut for publishing your notes straight from Bear.</p>
+<ol>
+<li>In order to create an automated shortcut, we must first create the script that will execute when triggering our shortcut.  Below is an example of the script I wrote for automation. The only thing you have to change is path you navigate to before calling <code>php bear-export.php</code></li>
+</ol>
+<pre><code>#!/bin/zsh
+
+cd ../../Side\ Projects/blogging-with-bear
+
+php bear-export.php</code></pre>
+<blockquote>
+<p>Note: I named my script “publish.zsh” and it lives in a directory called “scripts”</p>
+<p>Note:  make this sure has full permissions to run with <code>chmod 701</code> </p>
+</blockquote>
+<ol start="2">
+<li>Open the Automator macOS app</li>
+<li>Select “create new quick action”</li>
+<li>Search in the actions tab on the left for “Run shell script” and select. </li>
+<li>Configure the action settings
+<ul>
+<li>“Workflow receives” should be set to “no input”</li>
+<li>“In” should be set to “Bear” (in your applications folder)</li>
+<li>Make sure the selected shell is “/bin/zsh”</li>
+</ul></li>
+<li>Write a script to call <code>publish.zsh</code> this is what mine looked like:</li>
+</ol>
+<pre><code>PATH="/usr/local/bin:$PATH"
+cd Side\ Projects/scripts
+./publish.zsh</code></pre>
+<ol start="7">
+<li>Open your Bear app and click go to Bear &gt; Services &gt; Service Settings</li>
+<li>Click the arrow next to General and it should show whatever you named your Quick Action that we made above. Make sure the checkbox next to it is checked.</li>
+<li>To create a keyboard shortcut to call this Quick Action, double click where it says ‘none’ on the row with your Quick Action. This lets you set a new binding to call the action! I used <strong>⌘ Shift ⇧</strong> for my publish shortcut from Bear.</li>
+<li>To create a Touch Bar shortcut, go to <code>System Settings &gt; Keyboard &gt; Touch Bar Settings &gt; Customize Control Strip</code> and drag the Quick Actions tile down to your Touch Bar.</li>
+</ol>
+<h2>Publishing your Github Repo to the Web (using Netlify)</h2>
+<ol>
+<li>Go to <a href="https://www.netlify.com/">Netlify</a></li>
+<li>Create an account using Github (or sign in if you already have an account)</li>
+<li>Click “Add new site”</li>
+<li>Choose “Import an existing project”</li>
+<li>Select the GitHub repository that you used to store all your Bear notes (the one that you used to set for <code>$repo_url</code> in config.php)</li>
+<li>Netlify should start building your project right away at a Netlify owned domain!</li>
+</ol>
+<h6>Jan 12, 2023 at 3:40 PM</h6>	
+			</article>
+			<footer>
+			<ul>
+				<li>&copy;2023 <a href="https://glassvillage.io/"><b>Landon Borges</b></a></li>
+			</ul>
+		</footer>
+		</main>
+		<nav>
+			<!-- <span class="time">2023-01-12 @ 3:40 PM</span> -->
+		</nav>
+	</body>
+</html>

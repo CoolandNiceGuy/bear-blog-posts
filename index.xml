@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>GlassVillage 🌐</title>
+        <link>https://blog.glassvillage.io</link>
+        <description>Feed containing posts made on the Glass Village Blog</description>
+        <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+        <language>en</language>
+        <pubDate>Mon, 13 Feb 2023 16:39:00 -0600</pubDate>
+        <lastBuildDate>Mon, 13 Feb 2023 16:39:00 -0600</lastBuildDate>
+        <atom:link href="https://blog.glassvillage.io/index.xml" rel="self" type="application/rss+xml"/>
+	<item>
+		<title><![CDATA[Creating a Typescript Component Library]]></title>
+		<description><![CDATA[<h1>Creating a Typescript Component Library</h1>
+<h6>Feb 13, 2023 at 4:39 PM</h6>
+<blockquote>
+<p>How to initialize a typescript repository, plug in your components to Storybook, and publish your component stories to Chromatic.</p>
+</blockquote>
+<h2>Intro</h2>
+<p>Building component libraries is a great side project for any front-end developer who is looking to get more practice with react, typescript,  deployment, or enterprise tools (chromatic, storybook, rollup). On top of the skills you learn, you also come out of the project with plug-and-play components that you can leverage in future projects. </p>
+<p>This guide will take you step by step through the process of creating a typescript library, publishing it to NPM, and then deploying the storybook to Chromatic so you can share your component library with others.</p>
+<p><a href="https://63e94c797b83cb54af1a2082-vsfmurtifm.chromatic.com/?path=/docs/image--default">Link to Published Storybook</a></p>
+<p><a href="https://github.com/CoolandNiceGuy/y2k-component-library">Link to Example Repository</a></p>
+<h2>Step 1: Create a Git repository for your project</h2>
+<p>Before we even get into our text editor, make sure to create a remote repo for your library to live in. </p>
+<ol>
+<li>
+<p>Log in to your <a href="https://github.com/">Github</a> account</p>
+</li>
+<li>
+<p>Click the green button that says “New”</p>
+</li>
+<li>
+<p>Name the repository</p>
+<blockquote>
+<p>I named mine y2k-component-library</p>
+</blockquote>
+</li>
+<li>
+<p>Set the repository to <strong>Public</strong></p>
+</li>
+<li>
+<p>Check the “Add a README file” box</p>
+</li>
+<li>
+<p>Initialize the local directory where your Library lives with
+<code>git remote add origin https://github.com/username/REPO_NAME</code></p>
+</li>
+</ol>
+<h2>Step 2: Configuring the workspace</h2>
+<p>Now that we have source control configured, it’s time to start defining the settings that dictate how our project will behave.</p>
+<ol>
+<li>
+<p>Run <code>npm init</code> to initialize your directory as a package</p>
+</li>
+<li>
+<p>Create a .gitignore file and add <code>node_modules</code></p>
+</li>
+<li>
+<p>Add dev dependencies:</p>
+<pre><code>npm i -D react react-dom typescript</code></pre>
+</li>
+<li>
+<p>Create a <code>tsconfig.json</code> file to define typescript behavior in our project</p>
+<pre><code class="language-json">{
+"compilerOptions": {
+"target": "ES2016", 
+"esModuleInterop": true, 
+"forceConsistentCasingInFileNames": true,
+"strict": true, 
+"skipLibCheck": true,
+"jsx": "react", 
+"module": "ESNext",
+"sourceMap": true,
+"outDir": "dist",
+"moduleResolution": "node",
+"allowSyntheticDefaultImports": true,
+"types": [
+  "aria-query"
+]
+}
+}</code></pre>
+<blockquote>
+<p>This is what my <code>tsconfig</code> looked like for my project. If you wish to customize any of the settings, feel free to tweak as needed. </p>
+</blockquote>
+</li>
+<li>
+<p>Define file structure for components</p>
+<pre><code>.
+└── src/
+├── components/
+│   ├── component-1/
+│   │   ├── component-1.css
+│   │   ├── component-1.tsx
+│   │   └── index.ts
+│   ├── component-2/
+│   │   ├── component-2.css
+│   │   ├── component-2.tsx
+│   │   └── index.ts
+│   └── index.ts
+└── index.ts</code></pre>
+<blockquote>
+<p>There are a lot of different ways to do this, so take my template as a suggestion and not a hard rule. We include numerous <code>index.ts</code> files within our project to allow users of our library to have an easier time importing the components they need.</p>
+</blockquote>
+</li>
+</ol>
+<blockquote>
+<p>Each component’s <code>index.ts</code> needs to include
+<code>export {default} from ‘’./component-1</code></p>
+<p>The <code>index.ts</code> in the components directory should include an export for each of the components you create. Mine looks like this:</p>
+</blockquote>
+<pre><code class="language-ts">export { default as Button } from "./Button";
+export { default as Image } from "./Image";
+export { default as List } from "./List";
+export { default as Nav } from "./Nav";
+export { default as Section } from "./Section";
+export { default as Snippet } from "./Snippet";
+export {default as NavItem} from './NavItem'</code></pre>
+<blockquote>
+<p>And FINALLY, the <code>index.ts</code> in the src directory needs just 1 line:
+<code>export * from './components'</code></p>
+</blockquote>
+<ol start="6">
+<li>
+<p>Now that we have our folders organized, we initialize Storybook with
+<code>npx storybook init</code></p>
+</li>
+<li>
+<p>Once Storybook has initialized, it should have created a .storybook directory, open the <code>main.js</code> file in there and make sure it looks like this: </p>
+<pre><code class="language-javascript">"stories": [
+"../src/**/*.stories.mdx",
+"../src/**/*.stories.@(js|jsx|ts|tsx)"
+],
+"addons": [
+"@storybook/addon-links",
+"@storybook/addon-essentials",
+"@storybook/addon-interactions"
+],
+"framework": "@storybook/react"
+}</code></pre>
+<blockquote>
+<p>By defining these paths, we can now add a <code>.stories</code> to each of our component folders and Storybook will automatically find them and compile them with the command <code>npm run storybook</code></p>
+</blockquote>
+</li>
+<li>
+<p>Run <code>npm run storybook</code>  from your terminal to see the example stories from initialization.</p>
+<blockquote>
+<p>NOTE: you may run into an error that says “0308010C:digital envelope routines::unsupported”</p>
+<p>To solve this, create a <code>.npmrc</code>  file and paste this in there:
+legacy-peer-deps=true</p>
+<p>Then, update the <code>storybook</code> script in package.json to look like this</p>
+</blockquote>
+</li>
+</ol>
+<pre><code class="language-json">"storybook": "export NODE_OPTIONS=--openssl-legacy-provider; start-storybook -p 6006",</code></pre>
+<h2>Step 2: Creating your first Story</h2>
+<p>We now have the foundation of our project created,  now we can move to creating stories for the components you created.</p>
+<blockquote>
+<p>NOTE: This guide assumes you made components yourself between Step 2 and Step 3. </p>
+</blockquote>
+<ol>
+<li>Within one of your component directories, create a stories file based on the name of your component. I have a component called “Image” so I named the associated story file <code>Image.stories.tsx</code></li>
+<li>Make the necessary imports</li>
+</ol>
+<pre><code class="language-javascript">import React from "react";
+import { ComponentStory, ComponentMeta } from "@storybook/react";
+
+import Image from "./Image";</code></pre>
+<ol start="3">
+<li>Now we get to define how our component will behave in Storybook</li>
+</ol>
+<pre><code class="language-javascript">export default {
+  title: 'Image', //What to name Story
+  component: Image, //Component we imported
+  argTypes: {
+    shape: {control: 'radio', options: ['DEFAULT', 'LEFT_CHEVRON', 'RIGHT_CHEVRON', 'PARALLELOGRAM']}
+  },
+} as ComponentMeta&lt;typeof Image&gt;;
+</code></pre>
+<blockquote>
+<p>The argTypes object is what we use to customize the fields in Storybook that change the props! It is a super powerful tool from Storybook with a ton of different configurations. Visit <a href="https://storybook.js.org/docs/react/essentials/controls">the documentation</a> to see all the different options. Right now, I am using a radio button to switch between the options for my <code>shape</code> prop.</p>
+</blockquote>
+<ol start="4">
+<li>Define template for your component</li>
+</ol>
+<pre><code class="language-javascript">const Template: ComponentStory&lt;typeof Image&gt; = (args) =&gt; &lt;Image {...args}/&gt;</code></pre>
+<ol start="5">
+<li>Now you can define examples based on the template, and show the different options in the Storybook!</li>
+</ol>
+<pre><code class="language-javascript">export const RightChevron = Template.bind({});
+RightChevron.args = {
+  src:'https://www.slashfilm.com/img/gallery/astro-boy-reboot-everything-we-know-so-far/l-intro-1657292510.jpg',
+  alt: 'astroboy',
+  shape: 'RIGHT_CHEVRON'
+}</code></pre>
+<blockquote>
+<p>You can include any number of these exports in your Stories file and they will all appear under the Title we passed in at  </p>
+<img src="images/Screenshot 2023-02-13 at 3.18.03 PM.png">
+</blockquote>
+<h2>Step 4: Getting ready for deployment</h2>
+<p>In order to make our components as light as possible for users, we are going to leverage <a href="https://www.npmjs.com/package/rollup">rollup</a></p>
+<ol>
+<li>Install Rollup and necessary plugins</li>
+</ol>
+<pre><code>npm i -D rollup rollup-plugin-typescript2 rollup-plugin-peer-deps-external rollup-plugin-cleaner @rollup/plugin-commonjs @rollup/plugin-node-resolve</code></pre>
+<ol start="2">
+<li>Create a <code>rollup.config.mjs</code> file</li>
+<li>Fill the file with configuration preferences. Assuming you have the same setup as mine, it should look something like this:</li>
+</ol>
+<pre><code class="language-javascript">import typescript from 'rollup-plugin-typescript2';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import cleaner from 'rollup-plugin-cleaner';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import packageJson from "./package.json" assert { type: "json" };
+import css from "rollup-plugin-import-css";
+
+export default {
+  input: 'src/index.ts',
+  output: [
+    {
+      file: packageJson.main,
+      format: 'cjs',
+      sourcemap: true,
+    },
+    {
+      file: packageJson.module,
+      format: 'esm',
+      sourcemap: true,
+    },
+  ],
+  plugins: [
+    cleaner({
+      targets: ['./lib'],
+    }),
+    peerDepsExternal(),
+    resolve(),
+    commonjs(),
+    typescript({
+      exclude: ['**/*.stories.tsx', '**/*.test.tsx'],
+    }),
+    css(),
+  ],
+};</code></pre>
+<ol start="4">
+<li>Update package.json for deployment: we need to add <code>main</code>, <code>module</code>, and <code>files</code> fields, as well as a script to run the Rollup process.</li>
+</ol>
+<pre><code class="language-json">  "main": "lib/index.js",
+  "module": "lib/index.esm.js",
+    "scripts": {
+    ...
+     "rollup": "rollup -c",
+    }
+    "files": [
+    "lib"
+     ],     </code></pre>
+<ol start="5">
+<li>Now run <code>rpm run rollup</code> and it should create a file called <code>lib</code> filled with some javascript and CSS files. NPM knows to use these generated files for our library because we declared “lib” in our files in <code>package.json</code></li>
+</ol>
+<h2>Step 5: Deployment</h2>
+<p>We’re at the final leg of our journey: sharing our hard work with the world. First we will walk through publishing our package to NPM. Then set up our Storybook to be hosted on <a href="https://www.chromatic.com/">Chromatic</a></p>
+<ol>
+<li>Sign in (or register) @ npmjs.com</li>
+<li>Sign in to NPM from your terminal within your project with <code>npm login</code></li>
+<li>Run <code>npm publish —access=public</code>
+<blockquote>
+<p>This is all you need to publish your library! Now you should be able to see your package in your account on npmjs.com</p>
+</blockquote></li>
+</ol>
+<p>Now lets get this project hosted on Chromatic</p>
+<ol>
+<li>Create static storybook build of your project with <code>npm run storybook-build</code>
+<blockquote>
+<p>There may be a few issues with this command, similar to when we first tried to use <code>npm run storybook</code> for the first time. Change the <code>storybook-build</code> command to:</p>
+</blockquote></li>
+</ol>
+<pre><code class="language-json"> "build-storybook": "export NODE_OPTIONS=--openssl-legacy-provider; build-storybook",</code></pre>
+<p>In your package.json</p>
+<ol start="2">
+<li>Install chromatic with <code>npm i -D chromatic</code></li>
+<li>Log into <a href="https://www.chromatic.com/start">Chromatic</a></li>
+<li>Select “Choose GitHub repo”</li>
+<li>Select the repo that houses your library</li>
+<li>Copy the unique project token</li>
+<li>Run <code>npx chromatic —project-token=YOUR_PROJECT_TOKEN</code></li>
+<li>Once that has run it will generate a link for you in the terminal</li>
+<li>Click the link and follow the rest of the configuration steps</li>
+<li>Your’e done!</li>
+</ol>]]></description>
+		<link>https://blog.glassvillage.ioCreating%20a%20Typescript%20Component%20Library.html</link>
+		<pubDate>Mon, 13 Feb 2023 16:39:00 -0600</pubDate>
+		<guid isPermaLink="true">https://blog.glassvillage.ioCreating%20a%20Typescript%20Component%20Library.html</guid>
+	</item>
+	<item>
+		<title><![CDATA[Second-Hand Archive]]></title>
+		<description><![CDATA[<h1>Second-Hand Archive</h1>
+<blockquote>
+<p>Over the years I have amassed a few cool finds from various second-hand sources: Thrift Stores, FB Marketplace, Estate Sales, and Antique Stores. This page will serve as a living catalogue of all my cool finds.</p>
+</blockquote>
+<h2>ROWE / AMI 1980’s CD-100 JUKEBOX</h2>
+<img src="images/IMG_9930.jpeg">
+<blockquote>
+<p>Cost: $200</p>
+</blockquote>
+<h2>Toshiba MD13Q42 13” CRT TV</h2>
+<img src="images/IMG_0201.jpeg">
+<blockquote>
+<p>Cost: $25</p>
+</blockquote>
+<h2>Media Collection</h2>
+<img src="images/IMG_0202.jpeg">
+<blockquote>
+<p>Cost: ~$2/piece</p>
+</blockquote>
+<h2>Camel Ash Tray</h2>
+<img src="images/IMG_0204.jpeg">
+<img src="images/IMG_0203.jpeg">
+<blockquote>
+<p>Cost: $4</p>
+</blockquote>
+<h2>MCM Black Panther Statue</h2>
+<img src="images/Photo Jan 21, 2023 at 111239 AM.jpg">
+<blockquote>
+<p>Cost: Unknown (it was a gift)</p>
+</blockquote>
+<h2>Vintage Sony Stereo Rack</h2>
+<img src="images/IMG_0206.jpeg">
+<blockquote>
+<p>Cost: $35</p>
+</blockquote>
+<h2>Game-Worn Randy Moss Jersey</h2>
+<img src="images/IMG_0207.jpeg">
+<blockquote>
+<p>Cost: Unknown (it was a gift)</p>
+</blockquote>
+<h2>Macintosh Performa 6116CD</h2>
+<img src="images/Photo Jan 21, 2023 at 111752 AM.jpg">
+<blockquote>
+<p>Cost: $55</p>
+</blockquote>
+<h2>Vintage 1984 Elegante Ferrari Art Litho Poster</h2>
+<img src="images/Photo Jan 21, 2023 at 111829 AM.jpg">
+<blockquote>
+<p>Cost: $10</p>
+</blockquote>
+<h2>R.O.B (Robotic Operating Buddy)</h2>
+<img src="images/Photo Jan 21, 2023 at 111918 AM.jpg">
+<blockquote>
+<p>Cost: $10</p>
+</blockquote>
+<h6>Jan 21, 2023 at 10:55 AM</h6>]]></description>
+		<link>https://blog.glassvillage.ioSecond-Hand%20Archive.html</link>
+		<pubDate>Sat, 21 Jan 2023 10:55:00 -0600</pubDate>
+		<guid isPermaLink="true">https://blog.glassvillage.ioSecond-Hand%20Archive.html</guid>
+	</item>
+	<item>
+		<title><![CDATA[How To Create A Blog with Bear]]></title>
+		<description><![CDATA[<h1>How To Create A Blog with Bear</h1>
+<blockquote>
+<p>Create a note in bear, automatically publish it to GitHub with a keyboard shortcut, and have those changes reflected on your website. </p>
+</blockquote>
+<h2>Background</h2>
+<p>This article will walk through every step needed to create your own blog site and have it post content from your own <a href="http://www.bear-writer.com/">Bear app</a>.</p>
+<p>This work by using a PHP script to pull your Bear notes from the SQLite database, parsing the markdown and converting it to HTML, then posting the generated HTML files to <a href="https://github.com/CoolandNiceGuy/bear-blog-posts">Github</a> to be hosted on a <a href="https://blog.glassvillage.io/">website</a>. </p>
+<p>This site was created straight from my Bear app and is a testament to how approachable this workflow is.</p>
+<h2>Starting assumptions</h2>
+<ul>
+<li>You have (some)  experience with software development tools like:
+<ul>
+<li>Homebrew</li>
+<li>Github</li>
+<li>Terminal</li>
+<li>Text Editors</li>
+</ul></li>
+</ul>
+<h2>Step 1: Setup</h2>
+<ol>
+<li>
+<p>Clone GitHub project <a href="https://github.com/CoolandNiceGuy/blogging-with-bear">https://github.com/CoolandNiceGuy/blogging-with-bear</a> in whatever directory you want the project to live. </p>
+<blockquote>
+<p>Tip: make sure the directory does <strong>not</strong> have a folder named ‘public’ as that will be deleted when the script is run.</p>
+</blockquote>
+</li>
+<li>
+<p>Type <code>brew install php</code> in your terminal so we are able to run PHP scripts</p>
+</li>
+</ol>
+<h2>Step 2: Configuration</h2>
+<p>There are a few variables that have to be set to match your specific environment for this workflow to work.</p>
+<ol>
+<li>Open config.php and update the variables accordingly</li>
+<li>Open GitPublishHelper.php and update the <code>$path</code> and <code>$repo_url</code> variables </li>
+</ol>
+<h2>Step 3: Automation (optional)</h2>
+<p>At this point, assuming you set the configuration variables correctly, running bear-export.php will successfully publish your “public” tagged notes and upload them to GitHub. The instructions in this sections will allow you to create an Touch Bar action + keyboard shortcut for publishing your notes straight from Bear.</p>
+<ol>
+<li>In order to create an automated shortcut, we must first create the script that will execute when triggering our shortcut.  Below is an example of the script I wrote for automation. The only thing you have to change is path you navigate to before calling <code>php bear-export.php</code></li>
+</ol>
+<pre><code>#!/bin/zsh
+
+cd ../../Side\ Projects/blogging-with-bear
+
+php bear-export.php</code></pre>
+<blockquote>
+<p>Note: I named my script “publish.zsh” and it lives in a directory called “scripts”</p>
+<p>Note:  make this sure has full permissions to run with <code>chmod 701</code> </p>
+</blockquote>
+<ol start="2">
+<li>Open the Automator macOS app</li>
+<li>Select “create new quick action”</li>
+<li>Search in the actions tab on the left for “Run shell script” and select. </li>
+<li>Configure the action settings
+<ul>
+<li>“Workflow receives” should be set to “no input”</li>
+<li>“In” should be set to “Bear” (in your applications folder)</li>
+<li>Make sure the selected shell is “/bin/zsh”</li>
+</ul></li>
+<li>Write a script to call <code>publish.zsh</code> this is what mine looked like:</li>
+</ol>
+<pre><code>PATH="/usr/local/bin:$PATH"
+cd Side\ Projects/scripts
+./publish.zsh</code></pre>
+<ol start="7">
+<li>Open your Bear app and click go to Bear &gt; Services &gt; Service Settings</li>
+<li>Click the arrow next to General and it should show whatever you named your Quick Action that we made above. Make sure the checkbox next to it is checked.</li>
+<li>To create a keyboard shortcut to call this Quick Action, double click where it says ‘none’ on the row with your Quick Action. This lets you set a new binding to call the action! I used <strong>⌘ Shift ⇧</strong> for my publish shortcut from Bear.</li>
+<li>To create a Touch Bar shortcut, go to <code>System Settings &gt; Keyboard &gt; Touch Bar Settings &gt; Customize Control Strip</code> and drag the Quick Actions tile down to your Touch Bar.</li>
+</ol>
+<h2>Publishing your Github Repo to the Web (using Netlify)</h2>
+<ol>
+<li>Go to <a href="https://www.netlify.com/">Netlify</a></li>
+<li>Create an account using Github (or sign in if you already have an account)</li>
+<li>Click “Add new site”</li>
+<li>Choose “Import an existing project”</li>
+<li>Select the GitHub repository that you used to store all your Bear notes (the one that you used to set for <code>$repo_url</code> in config.php)</li>
+<li>Netlify should start building your project right away at a Netlify owned domain!</li>
+</ol>
+<h6>Jan 12, 2023 at 3:40 PM</h6>]]></description>
+		<link>https://blog.glassvillage.ioHow%20To%20Create%20A%20Blog%20with%20Bear.html</link>
+		<pubDate>Thu, 12 Jan 2023 15:40:00 -0600</pubDate>
+		<guid isPermaLink="true">https://blog.glassvillage.ioHow%20To%20Create%20A%20Blog%20with%20Bear.html</guid>
+	</item>
+    </channel>
+</rss>

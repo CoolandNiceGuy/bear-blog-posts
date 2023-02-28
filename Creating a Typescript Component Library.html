@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta content="width=device-width, initial-scale=1" name="viewport" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Exo:wght@600&family=Prompt&family=Roboto+Mono&display=swap" rel="stylesheet">
+		<title>Glass Village Blog</title>
+		<link rel="stylesheet"  type="text/css" href="./main.css">
+		<script src="https://kit.fontawesome.com/f68e658398.js" crossorigin="anonymous"></script>
+	</head>
+	<body>
+
+		<header>
+			<h1 class="title">Glass Village</h1>
+			<a href="https://blog.glassvillage.io"><div class="btn"><i class="fa-solid fa-house"></i></div></a>
+			<a href="https://glassvillage.io/"><div class="btn"><i class="fa-solid fa-globe"></i></div></a>
+			<a href="https://github.com/CoolandNiceGuy"><div class="btn"><i class="fa-brands fa-github"></i></div></a>
+			<a href="https://www.linkedin.com/in/landon-borges/"><div class="btn"><i class="fa-brands fa-linkedin"></i></div></a>
+			<a href="https://twitter.com/Landon_Borges"><div class="btn"><i class="fa-brands fa-twitter"></i></div></a>
+		</header>
+
+		<div class="mobileHeader">
+			<h1 class="title">Glass Village Blog</h1>
+		</div>
+
+		<main>
+			<article>
+	
+				<h1>Creating a Typescript Component Library</h1>
+<h6>Feb 13, 2023 at 4:39 PM</h6>
+<blockquote>
+<p>How to initialize a typescript repository, plug in your components to Storybook, and publish your component stories to Chromatic.</p>
+</blockquote>
+<h2>Intro</h2>
+<p>Building component libraries is a great side project for any front-end developer who is looking to get more practice with react, typescript,  deployment, or enterprise tools (chromatic, storybook, rollup). On top of the skills you learn, you also come out of the project with plug-and-play components that you can leverage in future projects. </p>
+<p>This guide will take you step by step through the process of creating a typescript library, publishing it to NPM, and then deploying the storybook to Chromatic so you can share your component library with others.</p>
+<p><a href="https://63e94c797b83cb54af1a2082-vsfmurtifm.chromatic.com/?path=/docs/image--default">Link to Published Storybook</a></p>
+<p><a href="https://github.com/CoolandNiceGuy/y2k-component-library">Link to Example Repository</a></p>
+<h2>Step 1: Create a Git repository for your project</h2>
+<p>Before we even get into our text editor, make sure to create a remote repo for your library to live in. </p>
+<ol>
+<li>
+<p>Log in to your <a href="https://github.com/">Github</a> account</p>
+</li>
+<li>
+<p>Click the green button that says “New”</p>
+</li>
+<li>
+<p>Name the repository</p>
+<blockquote>
+<p>I named mine y2k-component-library</p>
+</blockquote>
+</li>
+<li>
+<p>Set the repository to <strong>Public</strong></p>
+</li>
+<li>
+<p>Check the “Add a README file” box</p>
+</li>
+<li>
+<p>Initialize the local directory where your Library lives with
+<code>git remote add origin https://github.com/username/REPO_NAME</code></p>
+</li>
+</ol>
+<h2>Step 2: Configuring the workspace</h2>
+<p>Now that we have source control configured, it’s time to start defining the settings that dictate how our project will behave.</p>
+<ol>
+<li>
+<p>Run <code>npm init</code> to initialize your directory as a package</p>
+</li>
+<li>
+<p>Create a .gitignore file and add <code>node_modules</code></p>
+</li>
+<li>
+<p>Add dev dependencies:</p>
+<pre><code>npm i -D react react-dom typescript</code></pre>
+</li>
+<li>
+<p>Create a <code>tsconfig.json</code> file to define typescript behavior in our project</p>
+<pre><code class="language-json">{
+"compilerOptions": {
+"target": "ES2016", 
+"esModuleInterop": true, 
+"forceConsistentCasingInFileNames": true,
+"strict": true, 
+"skipLibCheck": true,
+"jsx": "react", 
+"module": "ESNext",
+"sourceMap": true,
+"outDir": "dist",
+"moduleResolution": "node",
+"allowSyntheticDefaultImports": true,
+"types": [
+  "aria-query"
+]
+}
+}</code></pre>
+<blockquote>
+<p>This is what my <code>tsconfig</code> looked like for my project. If you wish to customize any of the settings, feel free to tweak as needed. </p>
+</blockquote>
+</li>
+<li>
+<p>Define file structure for components</p>
+<pre><code>.
+└── src/
+├── components/
+│   ├── component-1/
+│   │   ├── component-1.css
+│   │   ├── component-1.tsx
+│   │   └── index.ts
+│   ├── component-2/
+│   │   ├── component-2.css
+│   │   ├── component-2.tsx
+│   │   └── index.ts
+│   └── index.ts
+└── index.ts</code></pre>
+<blockquote>
+<p>There are a lot of different ways to do this, so take my template as a suggestion and not a hard rule. We include numerous <code>index.ts</code> files within our project to allow users of our library to have an easier time importing the components they need.</p>
+</blockquote>
+</li>
+</ol>
+<blockquote>
+<p>Each component’s <code>index.ts</code> needs to include
+<code>export {default} from ‘’./component-1</code></p>
+<p>The <code>index.ts</code> in the components directory should include an export for each of the components you create. Mine looks like this:</p>
+</blockquote>
+<pre><code class="language-ts">export { default as Button } from "./Button";
+export { default as Image } from "./Image";
+export { default as List } from "./List";
+export { default as Nav } from "./Nav";
+export { default as Section } from "./Section";
+export { default as Snippet } from "./Snippet";
+export {default as NavItem} from './NavItem'</code></pre>
+<blockquote>
+<p>And FINALLY, the <code>index.ts</code> in the src directory needs just 1 line:
+<code>export * from './components'</code></p>
+</blockquote>
+<ol start="6">
+<li>
+<p>Now that we have our folders organized, we initialize Storybook with
+<code>npx storybook init</code></p>
+</li>
+<li>
+<p>Once Storybook has initialized, it should have created a .storybook directory, open the <code>main.js</code> file in there and make sure it looks like this: </p>
+<pre><code class="language-javascript">"stories": [
+"../src/**/*.stories.mdx",
+"../src/**/*.stories.@(js|jsx|ts|tsx)"
+],
+"addons": [
+"@storybook/addon-links",
+"@storybook/addon-essentials",
+"@storybook/addon-interactions"
+],
+"framework": "@storybook/react"
+}</code></pre>
+<blockquote>
+<p>By defining these paths, we can now add a <code>.stories</code> to each of our component folders and Storybook will automatically find them and compile them with the command <code>npm run storybook</code></p>
+</blockquote>
+</li>
+<li>
+<p>Run <code>npm run storybook</code>  from your terminal to see the example stories from initialization.</p>
+<blockquote>
+<p>NOTE: you may run into an error that says “0308010C:digital envelope routines::unsupported”</p>
+<p>To solve this, create a <code>.npmrc</code>  file and paste this in there:
+legacy-peer-deps=true</p>
+<p>Then, update the <code>storybook</code> script in package.json to look like this</p>
+</blockquote>
+</li>
+</ol>
+<pre><code class="language-json">"storybook": "export NODE_OPTIONS=--openssl-legacy-provider; start-storybook -p 6006",</code></pre>
+<h2>Step 2: Creating your first Story</h2>
+<p>We now have the foundation of our project created,  now we can move to creating stories for the components you created.</p>
+<blockquote>
+<p>NOTE: This guide assumes you made components yourself between Step 2 and Step 3. </p>
+</blockquote>
+<ol>
+<li>Within one of your component directories, create a stories file based on the name of your component. I have a component called “Image” so I named the associated story file <code>Image.stories.tsx</code></li>
+<li>Make the necessary imports</li>
+</ol>
+<pre><code class="language-javascript">import React from "react";
+import { ComponentStory, ComponentMeta } from "@storybook/react";
+
+import Image from "./Image";</code></pre>
+<ol start="3">
+<li>Now we get to define how our component will behave in Storybook</li>
+</ol>
+<pre><code class="language-javascript">export default {
+  title: 'Image', //What to name Story
+  component: Image, //Component we imported
+  argTypes: {
+    shape: {control: 'radio', options: ['DEFAULT', 'LEFT_CHEVRON', 'RIGHT_CHEVRON', 'PARALLELOGRAM']}
+  },
+} as ComponentMeta&lt;typeof Image&gt;;
+</code></pre>
+<blockquote>
+<p>The argTypes object is what we use to customize the fields in Storybook that change the props! It is a super powerful tool from Storybook with a ton of different configurations. Visit <a href="https://storybook.js.org/docs/react/essentials/controls">the documentation</a> to see all the different options. Right now, I am using a radio button to switch between the options for my <code>shape</code> prop.</p>
+</blockquote>
+<ol start="4">
+<li>Define template for your component</li>
+</ol>
+<pre><code class="language-javascript">const Template: ComponentStory&lt;typeof Image&gt; = (args) =&gt; &lt;Image {...args}/&gt;</code></pre>
+<ol start="5">
+<li>Now you can define examples based on the template, and show the different options in the Storybook!</li>
+</ol>
+<pre><code class="language-javascript">export const RightChevron = Template.bind({});
+RightChevron.args = {
+  src:'https://www.slashfilm.com/img/gallery/astro-boy-reboot-everything-we-know-so-far/l-intro-1657292510.jpg',
+  alt: 'astroboy',
+  shape: 'RIGHT_CHEVRON'
+}</code></pre>
+<blockquote>
+<p>You can include any number of these exports in your Stories file and they will all appear under the Title we passed in at  </p>
+<img src="images/Screenshot 2023-02-13 at 3.18.03 PM.png">
+</blockquote>
+<h2>Step 4: Getting ready for deployment</h2>
+<p>In order to make our components as light as possible for users, we are going to leverage <a href="https://www.npmjs.com/package/rollup">rollup</a></p>
+<ol>
+<li>Install Rollup and necessary plugins</li>
+</ol>
+<pre><code>npm i -D rollup rollup-plugin-typescript2 rollup-plugin-peer-deps-external rollup-plugin-cleaner @rollup/plugin-commonjs @rollup/plugin-node-resolve</code></pre>
+<ol start="2">
+<li>Create a <code>rollup.config.mjs</code> file</li>
+<li>Fill the file with configuration preferences. Assuming you have the same setup as mine, it should look something like this:</li>
+</ol>
+<pre><code class="language-javascript">import typescript from 'rollup-plugin-typescript2';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import cleaner from 'rollup-plugin-cleaner';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import packageJson from "./package.json" assert { type: "json" };
+import css from "rollup-plugin-import-css";
+
+export default {
+  input: 'src/index.ts',
+  output: [
+    {
+      file: packageJson.main,
+      format: 'cjs',
+      sourcemap: true,
+    },
+    {
+      file: packageJson.module,
+      format: 'esm',
+      sourcemap: true,
+    },
+  ],
+  plugins: [
+    cleaner({
+      targets: ['./lib'],
+    }),
+    peerDepsExternal(),
+    resolve(),
+    commonjs(),
+    typescript({
+      exclude: ['**/*.stories.tsx', '**/*.test.tsx'],
+    }),
+    css(),
+  ],
+};</code></pre>
+<ol start="4">
+<li>Update package.json for deployment: we need to add <code>main</code>, <code>module</code>, and <code>files</code> fields, as well as a script to run the Rollup process.</li>
+</ol>
+<pre><code class="language-json">  "main": "lib/index.js",
+  "module": "lib/index.esm.js",
+    "scripts": {
+    ...
+     "rollup": "rollup -c",
+    }
+    "files": [
+    "lib"
+     ],     </code></pre>
+<ol start="5">
+<li>Now run <code>rpm run rollup</code> and it should create a file called <code>lib</code> filled with some javascript and CSS files. NPM knows to use these generated files for our library because we declared “lib” in our files in <code>package.json</code></li>
+</ol>
+<h2>Step 5: Deployment</h2>
+<p>We’re at the final leg of our journey: sharing our hard work with the world. First we will walk through publishing our package to NPM. Then set up our Storybook to be hosted on <a href="https://www.chromatic.com/">Chromatic</a></p>
+<ol>
+<li>Sign in (or register) @ npmjs.com</li>
+<li>Sign in to NPM from your terminal within your project with <code>npm login</code></li>
+<li>Run <code>npm publish —access=public</code>
+<blockquote>
+<p>This is all you need to publish your library! Now you should be able to see your package in your account on npmjs.com</p>
+</blockquote></li>
+</ol>
+<p>Now lets get this project hosted on Chromatic</p>
+<ol>
+<li>Create static storybook build of your project with <code>npm run storybook-build</code>
+<blockquote>
+<p>There may be a few issues with this command, similar to when we first tried to use <code>npm run storybook</code> for the first time. Change the <code>storybook-build</code> command to:</p>
+</blockquote></li>
+</ol>
+<pre><code class="language-json"> "build-storybook": "export NODE_OPTIONS=--openssl-legacy-provider; build-storybook",</code></pre>
+<p>In your package.json</p>
+<ol start="2">
+<li>Install chromatic with <code>npm i -D chromatic</code></li>
+<li>Log into <a href="https://www.chromatic.com/start">Chromatic</a></li>
+<li>Select “Choose GitHub repo”</li>
+<li>Select the repo that houses your library</li>
+<li>Copy the unique project token</li>
+<li>Run <code>npx chromatic —project-token=YOUR_PROJECT_TOKEN</code></li>
+<li>Once that has run it will generate a link for you in the terminal</li>
+<li>Click the link and follow the rest of the configuration steps</li>
+<li>Your’e done!</li>
+</ol>	
+			</article>
+			<footer>
+			<ul>
+				<li>&copy;2023 <a href="https://glassvillage.io/"><b>Landon Borges</b></a></li>
+			</ul>
+		</footer>
+		</main>
+		<nav>
+			<!-- <span class="time">2023-02-13 @ 4:39 PM</span> -->
+		</nav>
+	</body>
+</html>
